@@ -12,6 +12,7 @@ vera-cowork/
 ├── agentes/     → los 6 agentes de VERA (leer 00-contexto-vera.md PRIMERO, siempre)
 ├── docs/        → especificación y diseños
 │   ├── spec.md                     → fuente de verdad del desarrollo
+│   ├── anexo-b-eventos.md          → esquema de los 8 eventos → M1/M2/M3 (spec técnica)
 │   ├── verificacion-humana.md      → anti-bot por etapas (pago + invitación + KYC)
 │   └── pitch-deck-actualizacion.md → plan de actualización del deck
 ├── tasks/       → plan técnico y tareas de implementación
