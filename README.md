@@ -9,6 +9,7 @@ Espacio de trabajo colaborativo del equipo Vera Cowork.
 ```
 vera-cowork/
 ├── README.md
+├── index.html   → portada: enlaza app, landing y métricas (raíz de GitHub Pages)
 ├── agentes/     → los 6 agentes de VERA (leer 00-contexto-vera.md PRIMERO, siempre)
 ├── docs/        → especificación y diseños
 │   ├── spec.md                     → fuente de verdad del desarrollo
@@ -24,10 +25,23 @@ vera-cowork/
 │   ├── fase-2-mvp.md        → product-owner + constructor (D30 ≥25%)
 │   ├── fase-3-beta-pago.md  → constructor + legal (churn <8%, NPS >50)
 │   └── fase-4-lanzamiento.md→ growth + legal (tiendas, 50k miembros)
-├── app/         → (próximo) Interfaz de Calma web — ver tasks/todo.md
-├── landing/     → (próximo) landing + lista de espera
+├── app/         → Interfaz de Calma web (5 pantallas + config + eventos + métricas)
+│   ├── index.html   → la app (una sesión completa)
+│   ├── metricas.html→ panel M1/M2/M3
+│   └── *.js         → config, eventos, seed, app (máquina de sesión)
+├── landing/     → landing + lista de espera (correo + nombre)
 └── salidas/     → entregables de los agentes (informes con fecha)
 ```
+
+## App en vivo (GitHub Pages)
+
+**URL:** https://septimoplano.github.io/vera-cowork/ — portada con la app, la landing y el panel de métricas.
+
+- App (Interfaz de Calma): https://septimoplano.github.io/vera-cowork/app/
+- Landing (lista de espera): https://septimoplano.github.io/vera-cowork/landing/
+- Métricas: https://septimoplano.github.io/vera-cowork/app/metricas.html
+
+> ⚠️ **No difundir la URL de la landing** en campañas hasta registrar la marca en INAPI y con orden del fundador (ver boundaries). Pages está activo para pruebas y entrevistas H1.
 
 ## Estado
 

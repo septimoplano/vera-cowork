@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080e0a">
+  <title>VERA — la red social de calma</title>
+  <meta name="description" content="Una red social sin publicidad y sin scroll infinito, donde cada cuenta es un humano verificado. Súmate a la lista de espera.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Estética heredada del wireframe (mismas variables que app/styles.css). */
+    :root{
+      --g100:#99E89D;--g200:#73C883;--g300:#4DA768;--g400:#26874E;--g500:#006633;
+      --dark-bg:#080e0a;--text:rgba(255,255,255,.92);--muted:rgba(255,255,255,.50);--faint:rgba(255,255,255,.26);
+      --glass-bg:rgba(255,255,255,.07);--glass-border:rgba(255,255,255,.14);--radius:16px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+    body{
+      background:radial-gradient(120% 80% at 50% -5%, #0d1712 0%, #060b08 55%, #04080a 100%) fixed;
+      color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+      min-height:100vh;overflow-x:hidden;line-height:1.6;
+    }
+    .wrap{max-width:640px;margin:0 auto;padding:56px 22px 72px;}
+    .vmark{display:inline-flex;flex-direction:column;line-height:.6;font-family:'Cinzel',serif;color:var(--g200);font-size:22px;}
+    .vmark span:last-child{transform:scaleY(-1);opacity:.85;}
+    .brand{font-family:'Cinzel',serif;letter-spacing:.2em;font-size:30px;color:#fff;font-weight:600;margin-top:14px;}
+    .brand .dot{color:var(--g200);}
+    .tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5.5vw,26px);color:var(--g100);margin-top:8px;}
+
+    h2{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(24px,6.5vw,32px);color:#fff;line-height:1.25;margin:0 0 8px;}
+    p.lead{font-size:clamp(15px,4vw,17px);color:var(--text);}
+    .muted{color:var(--muted);}
+    section{margin-top:44px;}
+    .dato{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,12vw,56px);color:var(--g100);font-weight:400;line-height:1;}
+    .dato small{display:block;font-family:'Inter',sans-serif;font-size:14px;color:var(--muted);margin-top:8px;font-weight:400;letter-spacing:.02em;}
+
+    .contrast{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+    .col{border:1px solid var(--glass-border);background:var(--glass-bg);border-radius:var(--radius);padding:16px;}
+    .col h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;font-weight:500;}
+    .col.malo h3{color:var(--faint);} .col.bueno h3{color:var(--g200);}
+    .col ul{list-style:none;font-size:13.5px;color:var(--text);}
+    .col li{padding:5px 0;padding-left:16px;position:relative;}
+    .col li::before{content:"—";position:absolute;left:0;color:var(--faint);}
+    .col.bueno li::before{content:"◇";color:var(--g300);font-size:10px;top:6px;}
+
+    /* ── Formulario lista de espera ── */
+    .cta{margin-top:48px;border:1px solid var(--glass-border);background:var(--glass-bg);border-radius:var(--radius);padding:24px 20px;}
+    .cta h2{margin-bottom:6px;}
+    form{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+    label{font-size:12px;color:var(--muted);letter-spacing:.02em;}
+    input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(0,0,0,.22);color:var(--text);font-size:15px;font-family:inherit;}
+    input:focus{outline:none;border-color:var(--g300);}
+    input::placeholder{color:var(--faint);}
+    /* Honeypot anti-bot: oculto para humanos, tentador para bots (ver docs/verificacion-humana.md). */
+    .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+    button{margin-top:6px;padding:14px;border-radius:12px;background:var(--g400);color:#fff;font-size:15px;font-weight:500;border:none;cursor:pointer;font-family:inherit;}
+    button:hover{background:var(--g300);}
+    .form-nota{font-size:11px;color:var(--faint);margin-top:4px;line-height:1.5;}
+    .ok-msg{display:none;text-align:center;padding:8px 0;}
+    .ok-msg .vmark{font-size:26px;margin-bottom:10px;}
+    .ok-msg h2{margin-bottom:6px;}
+
+    footer{margin-top:56px;border-top:1px solid var(--glass-border);padding-top:22px;font-size:12px;color:var(--faint);line-height:1.8;text-align:center;}
+    a{color:var(--g100);}
+    @media (max-width:420px){.contrast{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <span class="vmark"><span>V</span><span>V</span></span>
+      <div class="brand">VERA<span class="dot">.</span></div>
+      <div class="tagline">La red social de calma.</div>
+    </header>
+
+    <section>
+      <div class="dato">51%
+        <small>del tráfico de internet en 2024 ya no fue humano.<br>Fuente: Imperva Bad Bot Report 2025.</small>
+      </div>
+      <p class="lead" style="margin-top:22px;">
+        Cada día es más difícil saber si lo que lees lo escribió una persona.
+        Las redes que conoces no compiten por tu confianza: compiten por tu tiempo,
+        con un scroll que no termina nunca.
+      </p>
+    </section>
+
+    <section>
+      <h2>VERA es lo contrario.</h2>
+      <p class="lead muted">
+        Una red social <strong style="color:var(--text)">sin publicidad</strong> y
+        <strong style="color:var(--text)">sin scroll infinito</strong>, donde cada cuenta
+        es un <strong style="color:var(--text)">humano verificado</strong>. Sesiones que
+        empiezan y terminan. Un espacio que te devuelve el tiempo, en vez de quitártelo.
+      </p>
+
+      <div class="contrast">
+        <div class="col malo">
+          <h3>El scroll infinito</h3>
+          <ul>
+            <li>Cientos de piezas al día</li>
+            <li>Diseñado para que no pares</li>
+            <li>Cuentas falsas y bots</li>
+            <li>Tú eres el producto</li>
+          </ul>
+        </div>
+        <div class="col bueno">
+          <h3>VERA</h3>
+          <ul>
+            <li>Pocas piezas, con intención</li>
+            <li>Un freno que te invita a cerrar</li>
+            <li>Solo humanos verificados</li>
+            <li>Tú eres el miembro</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Lista de espera ── -->
+    <section class="cta" id="cta">
+      <div id="form-box">
+        <h2>Súmate a la lista de espera.</h2>
+        <p class="muted" style="font-size:14px;">
+          Te escribiremos cuando VERA abra sus primeras puertas. Sin spam, sin ruido.
+        </p>
+        <form id="waitlist" novalidate>
+          <div>
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" autocomplete="given-name" required>
+          </div>
+          <div>
+            <label for="email">Correo</label>
+            <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
+          </div>
+          <!-- honeypot: si se rellena, es un bot → se descarta en silencio -->
+          <div class="hp" aria-hidden="true">
+            <label>No llenar este campo<input type="text" id="empresa" name="empresa" tabindex="-1" autocomplete="off"></label>
+          </div>
+          <button type="submit">Quiero mi lugar</button>
+          <p class="form-nota">
+            Guardamos solo tu nombre y correo, para avisarte. Podrás borrarte cuando quieras.
+          </p>
+        </form>
+      </div>
+
+      <div class="ok-msg" id="ok-msg">
+        <div class="vmark"><span>V</span><span>V</span></div>
+        <h2>Quedaste en la lista.</h2>
+        <p class="muted">Gracias por querer un internet más humano. Te escribiremos.</p>
+      </div>
+    </section>
+
+    <footer>
+      VERA · red social de calma · humanos verificados<br>
+      Documento de trabajo · uso de datos mínimo y transparente · sin publicidad
+    </footer>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Lista de espera — almacenamiento LOCAL de validación.
+    //
+    //  En esta etapa persiste en localStorage.vera_waitlist. NO es la lista real
+    //  de campaña: solo prueba que la captura funciona en las entrevistas H1.
+    //
+    //  ┌─ HOOK MailerLite (Etapa de campaña) ─────────────────────────────────┐
+    //  │ Reemplazar el bloque marcado más abajo por una llamada al endpoint de │
+    //  │ MailerLite (grupo "VERA lista de espera"), con double opt-in activado. │
+    //  │ Cuenta MailerLite a definir con el fundador (spec.md, pregunta abierta).│
+    //  │ Ejemplo:                                                               │
+    //  │   await fetch('https://connect.mailerlite.com/api/subscribers', {      │
+    //  │     method:'POST',                                                     │
+    //  │     headers:{'Content-Type':'application/json',                        │
+    //  │              'Authorization':'Bearer '+TOKEN},   // token vía backend, │
+    //  │     body: JSON.stringify({ email, fields:{name:nombre},               │
+    //  │                            groups:[GRUPO_ID] })                        │
+    //  │   });                                                                  │
+    //  │ ⚠ El token NUNCA va en este HTML (boundary: sin secretos en el repo).  │
+    //  │   Debe pasar por un backend/función serverless que lo guarde.          │
+    //  └────────────────────────────────────────────────────────────────────────┘
+    // ─────────────────────────────────────────────────────────────────────────
+    (function () {
+      var WAITLIST_KEY = 'vera_waitlist';
+      var form = document.getElementById('waitlist');
+
+      function leer() {
+        try { return JSON.parse(localStorage.getItem(WAITLIST_KEY)) || []; }
+        catch (_) { return []; }
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Anti-bot: honeypot relleno → descartar en silencio (finge éxito).
+        if (document.getElementById('empresa').value.trim() !== '') {
+          mostrarGracias();
+          return;
+        }
+
+        var nombre = document.getElementById('nombre').value.trim();
+        var email = document.getElementById('email').value.trim();
+        if (!nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+
+        // ── Persistencia local (reemplazar por el HOOK MailerLite en campaña) ──
+        var lista = leer();
+        lista.push({ nombre: nombre, email: email, fecha: new Date().toISOString(), origen: 'landing' });
+        localStorage.setItem(WAITLIST_KEY, JSON.stringify(lista));
+        // ────────────────────────────────────────────────────────────────────
+
+        console.log('[vera] alta lista de espera:', { nombre: nombre, email: email });
+        mostrarGracias();
+      });
+
+      function mostrarGracias() {
+        document.getElementById('form-box').style.display = 'none';
+        document.getElementById('ok-msg').style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>
