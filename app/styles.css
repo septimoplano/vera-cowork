@@ -1,0 +1,132 @@
+/* styles.css — sistema visual de VERA Fase 1 (T4).
+   Porta las variables y componentes del wireframe (VERA Fase1 Wireframe.html)
+   a un viewport móvil REAL: la app ocupa toda la pantalla, no un phone-frame decorativo.
+   Responsive 320–430px. Sin overflow horizontal (box-sizing + anchos fluidos).
+
+   Fuentes: Cinzel, Cormorant Garamond, Inter — heredadas del wireframe (stack del spec).
+   Es la única dependencia externa; puede autohospedarse para uso offline en Etapa B.
+
+   Clases pensadas para que T5 (app/index.html + app.js) las consuma tal cual.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --g100:#99E89D; --g200:#73C883; --g300:#4DA768; --g400:#26874E; --g500:#006633;
+  --dark-bg:#080e0a; --dark-s1:#0f1a11; --dark-s2:#162019;
+  --glass-bg:rgba(255,255,255,.07); --glass-bg2:rgba(255,255,255,.13);
+  --glass-border:rgba(255,255,255,.14);
+  --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.50); --faint:rgba(255,255,255,.26);
+  --radius:22px; --radius-sm:14px;
+}
+
+/* ── Reset mínimo ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+html, body { height:100%; }
+body {
+  background:radial-gradient(120% 90% at 50% -10%, #0d1712 0%, #060b08 55%, #04080a 100%);
+  background-attachment:fixed;
+  color:var(--text); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  min-height:100vh; overflow-x:hidden;
+}
+img, svg { max-width:100%; }
+button { font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+textarea { font-family:inherit; }
+
+/* ── Contenedor de la app: una columna centrada, ancho de teléfono ── */
+#app {
+  width:100%; max-width:430px; margin:0 auto; min-height:100vh; min-height:100dvh;
+  display:flex; flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px);
+}
+
+/* Una vista ocupa toda la altura disponible; T5 muestra una a la vez. */
+.vista { flex:1; display:flex; flex-direction:column; min-height:0; }
+.vista[hidden] { display:none; }
+
+/* ── Marca ── */
+.topbar { display:flex; justify-content:center; align-items:center; padding-bottom:6px; }
+.vmark { display:inline-flex; flex-direction:column; line-height:.62; font-family:'Cinzel',serif; color:var(--g200); font-size:16px; }
+.vmark span:last-child { transform:scaleY(-1); opacity:.85; }
+.logo-sm { font-family:'Cinzel',serif; letter-spacing:.16em; font-size:14px; color:#fff; font-weight:600; }
+
+/* ── S1 · Aterrizaje ── */
+.aterrizaje { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.greet { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); margin-bottom:20px; }
+.pregunta { font-family:'Cormorant Garamond',serif; font-size:clamp(23px,7vw,28px); line-height:1.25; color:#fff; font-weight:300; margin-bottom:30px; max-width:22ch; }
+.fichas { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
+.ficha { font-size:13px; padding:10px 16px; border-radius:999px; border:1px solid var(--glass-border); background:var(--glass-bg); color:var(--text); }
+.ficha.sel { background:rgba(115,200,131,.16); border-color:var(--g300); color:var(--g100); }
+.saltar { margin-top:28px; font-size:12px; color:var(--faint); background:none; }
+
+/* ── S2 · Tránsito de calma ── */
+.transito { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; }
+.respira {
+  width:112px; height:112px; border-radius:50%;
+  background:radial-gradient(circle at 50% 45%, rgba(153,232,157,.30), rgba(38,135,78,.05) 70%);
+  border:1px solid rgba(153,232,157,.30); animation:respira 4s ease-in-out infinite;
+}
+@keyframes respira { 0%,100%{ transform:scale(.86); opacity:.7; } 50%{ transform:scale(1.06); opacity:1; } }
+@media (prefers-reduced-motion: reduce) { .respira { animation:none; } }
+.respira-txt { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:var(--g100); text-align:center; max-width:24ch; }
+
+/* ── S3 · Contenido con tope ── */
+.contenido { flex:1; display:flex; flex-direction:column; overflow-y:auto; }
+.tope-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.tope-count { font-size:12px; color:var(--muted); letter-spacing:.04em; }
+.tope-dots { display:flex; gap:5px; }
+.tdot { width:7px; height:7px; border-radius:50%; background:var(--glass-bg2); }
+.tdot.on { background:var(--g200); }
+
+.card { border:1px solid var(--glass-border); background:var(--glass-bg); border-radius:var(--radius-sm); padding:14px; margin-bottom:12px; }
+.card-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.av { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--g300),var(--g500)); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:600; position:relative; }
+.verif { position:absolute; bottom:-3px; right:-3px; width:14px; height:14px; border-radius:50%; background:var(--g200); border:2px solid var(--dark-bg); display:flex; align-items:center; justify-content:center; font-size:7px; color:#04140a; font-weight:700; }
+.card-nombre { font-size:13px; color:#fff; font-weight:500; }
+.card-sub { font-size:10px; color:var(--faint); }
+.card-cuerpo { font-size:13px; line-height:1.55; color:var(--text); }
+.card-prompt { border-style:dashed; border-color:rgba(153,232,157,.30); background:rgba(153,232,157,.05); }
+.prompt-tag { font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--g200); margin-bottom:6px; }
+
+.acciones { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.accion { font-size:11px; padding:8px 13px; border-radius:999px; border:1px solid var(--glass-border); color:var(--muted); background:none; }
+.accion.primary { background:rgba(115,200,131,.16); border-color:var(--g300); color:var(--g100); }
+
+/* ── Compositor (responder / prompt / crear) ── */
+.compositor { margin-top:10px; }
+.compositor textarea {
+  width:100%; min-height:96px; resize:vertical; padding:12px;
+  border-radius:var(--radius-sm); border:1px solid var(--glass-border);
+  background:rgba(0,0,0,.20); color:var(--text); font-size:13px; line-height:1.5;
+}
+.compositor textarea::placeholder { color:var(--faint); }
+.compositor-pie { display:flex; align-items:center; justify-content:space-between; margin-top:8px; gap:10px; }
+.contador { font-size:10px; color:var(--faint); }
+.contador.ok { color:var(--g200); }
+
+/* ── S4 · Freno de mano (también ráfaga ansiosa y estado agotado) ── */
+.freno { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:8px; }
+.freno-mark { font-family:'Cinzel',serif; font-size:26px; color:var(--g200); letter-spacing:.1em; margin-bottom:8px; }
+.freno-t { font-family:'Cormorant Garamond',serif; font-size:clamp(22px,6.5vw,26px); color:#fff; font-weight:300; line-height:1.3; }
+.freno-s { font-size:12px; color:var(--muted); line-height:1.6; max-width:26ch; margin-top:6px; }
+.btn-primario { margin-top:20px; width:100%; padding:14px; border-radius:12px; background:var(--g400); color:#fff; font-size:14px; font-weight:500; }
+.btn-fantasma { margin-top:10px; width:100%; padding:12px; border-radius:12px; background:transparent; color:var(--faint); font-size:12px; border:1px solid var(--glass-border); }
+
+/* ── S5 · Cierre con propósito ── */
+.cierre { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px; }
+.cierre-t { font-family:'Cormorant Garamond',serif; font-size:clamp(22px,6.5vw,26px); color:#fff; font-weight:300; line-height:1.3; }
+.resumen { width:100%; border:1px solid var(--glass-border); background:var(--glass-bg); border-radius:var(--radius-sm); padding:16px; text-align:left; }
+.resumen-fila { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text); padding:7px 0; }
+.resumen-fila .ic { width:22px; height:22px; border-radius:7px; background:rgba(115,200,131,.16); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--g100); flex-shrink:0; }
+.cierre-pie { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:15px; color:var(--g100); }
+
+/* ── Utilidades ── */
+.centrado { text-align:center; }
+.oculto, [hidden] { display:none !important; }
+
+/* Pantallas muy angostas (≤340px): apretar un poco sin romper. */
+@media (max-width:340px) {
+  #app { padding-left:14px; padding-right:14px; }
+  .ficha { font-size:12px; padding:9px 13px; }
+  .pregunta { font-size:22px; }
+}
