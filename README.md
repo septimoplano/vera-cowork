@@ -35,13 +35,22 @@ vera-cowork/
 
 ## App en vivo (GitHub Pages)
 
-**URL:** https://septimoplano.github.io/vera-cowork/ — portada con la app, la landing y el panel de métricas.
+**URL (una vez activado Pages):** https://septimoplano.github.io/vera-cowork/
 
 - App (Interfaz de Calma): https://septimoplano.github.io/vera-cowork/app/
 - Landing (lista de espera): https://septimoplano.github.io/vera-cowork/landing/
 - Métricas: https://septimoplano.github.io/vera-cowork/app/metricas.html
 
-> ⚠️ **No difundir la URL de la landing** en campañas hasta registrar la marca en INAPI y con orden del fundador (ver boundaries). Pages está activo para pruebas y entrevistas H1.
+### Activar Pages (1 clic — requiere la cuenta dueña del repo, `septimoplano`)
+
+Pages necesita permiso **admin**; hay que activarlo desde la cuenta dueña:
+
+1. Repo → **Settings** → **Pages**
+2. En **Source**, elegir **Deploy from a branch**
+3. Branch: **master**, carpeta: **/ (root)** → **Save**
+4. En ~1 min la URL de arriba queda en línea
+
+> ⚠️ **No difundir la URL de la landing** en campañas hasta registrar la marca en INAPI y con orden del fundador (ver boundaries). Actívalo para pruebas y entrevistas H1, sin difundir aún.
 
 ## Estado
 
