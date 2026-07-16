@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080e0a">
+  <title>VERA — Métricas matrices</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Estilos propios del panel (no toca styles.css de T4). */
+    #app { max-width: 720px; }
+    .panel-titulo { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 26px; color: #fff; margin: 10px 0 2px; }
+    .panel-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+    @media (max-width: 480px) { .stats { grid-template-columns: 1fr; } }
+    .stat { border: 1px solid var(--glass-border); background: var(--glass-bg); border-radius: var(--radius-sm); padding: 14px; }
+    .stat-nombre { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--g200); margin-bottom: 8px; }
+    .stat-valor { font-family: 'Cormorant Garamond', serif; font-size: 34px; color: #fff; line-height: 1; }
+    .stat-detalle { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .stat-tendencia { font-size: 10px; color: var(--faint); margin-top: 4px; }
+    .acciones-panel { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+    .tabla-wrap { border: 1px solid var(--glass-border); background: var(--glass-bg); border-radius: var(--radius-sm); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--glass-border); white-space: nowrap; }
+    td.datos { white-space: normal; word-break: break-word; color: var(--muted); font-family: monospace; font-size: 10px; }
+    th { color: var(--g200); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: 9px; }
+    tr:last-child td { border-bottom: none; }
+    .vacio { padding: 28px; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <span class="vmark"><span>V</span><span>V</span></span>
+    </header>
+
+    <h1 class="panel-titulo">Métricas matrices</h1>
+    <p class="panel-sub">Calculadas desde <code>localStorage.vera_events</code> (Anexo B) · <span id="n-eventos"></span></p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-nombre">M1 · Retorno tranquilo</div>
+        <div class="stat-valor" id="m1">—</div>
+        <div class="stat-detalle" id="m1-det">% de sesiones-rebote (&lt;15 s sin acción)</div>
+        <div class="stat-tendencia">tendencia deseada: ↓</div>
+      </div>
+      <div class="stat">
+        <div class="stat-nombre">M2 · Salida voluntaria</div>
+        <div class="stat-valor" id="m2">—</div>
+        <div class="stat-detalle" id="m2-det">frenos aceptados / frenos mostrados</div>
+        <div class="stat-tendencia">tendencia deseada: ↑</div>
+      </div>
+      <div class="stat">
+        <div class="stat-nombre">M3 · Acción por sesión</div>
+        <div class="stat-valor" id="m3">—</div>
+        <div class="stat-detalle" id="m3-det">acciones con intención computables / sesiones</div>
+        <div class="stat-tendencia">objetivo de cohorte: ≥ 1.0</div>
+      </div>
+    </div>
+
+    <div class="acciones-panel">
+      <button class="accion primary" id="btn-exportar">⇩ Exportar eventos (JSON)</button>
+      <button class="accion" id="btn-refrescar">Refrescar</button>
+    </div>
+
+    <div class="tabla-wrap" id="tabla-wrap"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="eventos.js"></script>
+  <script>
+    // ── Cálculo puro de M1/M2/M3 (fórmulas exactas de docs/anexo-b-eventos.md) ──
+    // Expuesto como función global para poder verificarse con eventos sintéticos.
+    function calcularMetricas(eventos, config) {
+      const de = tipo => eventos.filter(e => e.tipo === tipo);
+      const cierres = de('session.close');
+
+      // M1: sesiones con duracion_s < BOUNCE_MAX_S y 0 acciones, sobre el total
+      const rebotes = cierres.filter(e =>
+        e.datos.duracion_s < config.BOUNCE_MAX_S && e.datos.acciones === 0);
+      const m1 = cierres.length ? (rebotes.length / cierres.length) * 100 : null;
+
+      // M2: brake.result acepto / brake.shown
+      const frenos = de('brake.shown').length;
+      const aceptados = de('brake.result').filter(e => e.datos.resultado === 'acepto').length;
+      const m2 = frenos ? (aceptados / frenos) * 100 : null;
+
+      // M3: Σ action.* computables / Σ sesiones
+      //  · reply/prompt_answer/create computan con chars ≥ MIN_CHARS
+      //  · save computa siempre
+      //  · gesture computa solo los primeros GESTURES_COUNTED_PER_DAY del día LOCAL
+      const acciones = eventos.filter(e => e.tipo.startsWith('action.'));
+      const gestosPorDia = {};
+      let computables = 0;
+      for (const e of acciones.slice().sort((a, b) => a.ts - b.ts)) {
+        const t = e.datos.tipo;
+        if (t === 'save') { computables++; continue; }
+        if (t === 'gesture') {
+          const d = new Date(e.ts);
+          const dia = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+          gestosPorDia[dia] = (gestosPorDia[dia] || 0) + 1;
+          if (gestosPorDia[dia] <= config.GESTURES_COUNTED_PER_DAY) computables++;
+          continue;
+        }
+        // reply | prompt_answer | create
+        if (typeof e.datos.chars === 'number' && e.datos.chars >= config.MIN_CHARS) computables++;
+      }
+      const m3 = cierres.length ? computables / cierres.length : null;
+
+      return {
+        m1, m2, m3,
+        sesiones: cierres.length, rebotes: rebotes.length,
+        frenosMostrados: frenos, frenosAceptados: aceptados,
+        accionesComputables: computables, totalEventos: eventos.length,
+      };
+    }
+
+    // ── Render del panel ──
+    function pintar() {
+      const eventos = leerEventos();
+      const m = calcularMetricas(eventos, VERA_CONFIG);
+      const $ = s => document.querySelector(s);
+      const pct = v => v === null ? '—' : v.toFixed(v % 1 ? 1 : 0) + '%';
+
+      $('#n-eventos').textContent = `${m.totalEventos} eventos registrados`;
+      $('#m1').textContent = pct(m.m1);
+      $('#m1-det').textContent = `${m.rebotes} rebote${m.rebotes === 1 ? '' : 's'} en ${m.sesiones} sesion${m.sesiones === 1 ? '' : 'es'} (<${VERA_CONFIG.BOUNCE_MAX_S} s sin acción)`;
+      $('#m2').textContent = pct(m.m2);
+      $('#m2-det').textContent = `${m.frenosAceptados} aceptado${m.frenosAceptados === 1 ? '' : 's'} de ${m.frenosMostrados} freno${m.frenosMostrados === 1 ? '' : 's'} mostrado${m.frenosMostrados === 1 ? '' : 's'}`;
+      $('#m3').textContent = m.m3 === null ? '—' : m.m3.toFixed(m.m3 % 1 ? 2 : 1);
+      $('#m3-det').textContent = `${m.accionesComputables} acci${m.accionesComputables === 1 ? 'ón' : 'ones'} computable${m.accionesComputables === 1 ? '' : 's'} / ${m.sesiones} sesion${m.sesiones === 1 ? '' : 'es'}`;
+
+      const wrap = $('#tabla-wrap');
+      if (!eventos.length) {
+        wrap.innerHTML = `<div class="vacio">Sin eventos todavía.<br>
+          Abre <a href="index.html" style="color:var(--g200)">la app</a>, vive una sesión y vuelve aquí.</div>`;
+        return;
+      }
+      const filas = eventos.slice().reverse().map(e => `
+        <tr>
+          <td>${new Date(e.ts).toLocaleString('es-CL')}</td>
+          <td>${e.tipo}</td>
+          <td class="datos">${JSON.stringify(e.datos)}</td>
+        </tr>`).join('');
+      wrap.innerHTML = `<table>
+        <thead><tr><th>Fecha</th><th>Evento</th><th>Datos</th></tr></thead>
+        <tbody>${filas}</tbody></table>`;
+    }
+
+    document.querySelector('#btn-exportar').addEventListener('click', () => exportarEventos());
+    document.querySelector('#btn-refrescar').addEventListener('click', pintar);
+    pintar();
+  </script>
+</body>
+</html>
