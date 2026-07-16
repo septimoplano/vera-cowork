@@ -9,6 +9,7 @@ Espacio de trabajo colaborativo del equipo Vera Cowork.
 ```
 vera-cowork/
 ├── README.md
+├── index.html   → portada: enlaza app, landing y métricas (raíz de GitHub Pages)
 ├── agentes/     → los 6 agentes de VERA (leer 00-contexto-vera.md PRIMERO, siempre)
 ├── docs/        → especificación y diseños
 │   ├── spec.md                     → fuente de verdad del desarrollo
@@ -24,10 +25,32 @@ vera-cowork/
 │   ├── fase-2-mvp.md        → product-owner + constructor (D30 ≥25%)
 │   ├── fase-3-beta-pago.md  → constructor + legal (churn <8%, NPS >50)
 │   └── fase-4-lanzamiento.md→ growth + legal (tiendas, 50k miembros)
-├── app/         → (próximo) Interfaz de Calma web — ver tasks/todo.md
-├── landing/     → (próximo) landing + lista de espera
+├── app/         → Interfaz de Calma web (5 pantallas + config + eventos + métricas)
+│   ├── index.html   → la app (una sesión completa)
+│   ├── metricas.html→ panel M1/M2/M3
+│   └── *.js         → config, eventos, seed, app (máquina de sesión)
+├── landing/     → landing + lista de espera (correo + nombre)
 └── salidas/     → entregables de los agentes (informes con fecha)
 ```
+
+## App en vivo (GitHub Pages)
+
+**URL (una vez activado Pages):** https://septimoplano.github.io/vera-cowork/
+
+- App (Interfaz de Calma): https://septimoplano.github.io/vera-cowork/app/
+- Landing (lista de espera): https://septimoplano.github.io/vera-cowork/landing/
+- Métricas: https://septimoplano.github.io/vera-cowork/app/metricas.html
+
+### Activar Pages (1 clic — requiere la cuenta dueña del repo, `septimoplano`)
+
+Pages necesita permiso **admin**; hay que activarlo desde la cuenta dueña:
+
+1. Repo → **Settings** → **Pages**
+2. En **Source**, elegir **Deploy from a branch**
+3. Branch: **master**, carpeta: **/ (root)** → **Save**
+4. En ~1 min la URL de arriba queda en línea
+
+> ⚠️ **No difundir la URL de la landing** en campañas hasta registrar la marca en INAPI y con orden del fundador (ver boundaries). Actívalo para pruebas y entrevistas H1, sin difundir aún.
 
 ## Estado
 
