@@ -1,48 +1,39 @@
-// eventos.js — instrumentación de los 8 eventos (Anexo B de Decisiones Cerradas v1).
+// eventos.js — instrumentación de los 8 eventos del Anexo B.
+// Fuente de verdad: docs/anexo-b-eventos.md (Anexo B de Decisiones Cerradas v1).
 // En esta etapa persiste en localStorage.vera_events + consola; en Etapa B va a PostHog.
 //
-// ⚠ ESQUEMA DERIVADO: el Anexo B original vive en «VERA Fase1 Decisiones Cerradas v1.md»
-// (no está en este repo). Este esquema se derivó de los nombres citados en
-// agentes/constructor-tecnico.md y de lo que M1/M2/M3 necesitan para calcularse.
-// El product-owner debe validarlo contra el documento original antes de T5.
+// Evento persistido: { tipo, ts (epoch ms), fecha (ISO 8601), datos }
+// `ts`/`fecha` los agrega emitir(); `datos` lleva los campos del Anexo B por tipo.
 //
-// Los 8 tipos y qué carga lleva cada `datos`:
-//
-//   session.open    {sesion_n}                      apertura de la app (base de ráfaga ansiosa)
-//   session.start   {sesion_n, pregunta_id}         sesión inicia contenido (pasó aterrizaje)
-//   piece.view      {pieza_id, tipo_pieza, posicion} pieza vista ('persona'|'prompt', 1..7)
-//   action.*        {pieza_id?, chars?, computa}    acción con intención — subtipos:
-//                     action.responder · action.responder_prompt · action.guardar
-//                     · action.crear · action.gesto
-//                     `computa=false` si gesto 4º del día o texto < MIN_CHARS (M3)
-//   brake.shown     {sesion_n}                      freno de mano mostrado
-//   brake.result    {resultado}                     'cerrar' | 'ver_mas' (M2 = % cerrar)
-//   session.close   {duracion_s, acciones, rebote}  cierre; rebote = <15 s sin acción (M1)
-//   day.exhausted   {}                              presupuesto diario agotado
-//
-// Cada evento persistido: { tipo, ts (epoch ms), fecha (ISO 8601), datos }
+// La computabilidad para M3 (chars ≥ MIN_CHARS, gesto ≤3/día) NO se valida aquí:
+// es lógica de métrica (app.js decide, metricas.html calcula). Un action con
+// chars < 20 es un evento válido — simplemente no computa.
 
-const TIPOS_EVENTO = [
-  'session.open',
-  'session.start',
-  'piece.view',
-  'action.*', // comodín: ver ACCIONES_VALIDAS
-  'brake.shown',
-  'brake.result',
-  'session.close',
-  'day.exhausted',
-];
+const ACCIONES_VALIDAS = ['reply', 'prompt_answer', 'save', 'create', 'gesture'];
 
-const ACCIONES_VALIDAS = ['responder', 'responder_prompt', 'guardar', 'crear', 'gesto'];
+// Esquema por tipo (Anexo B): campos requeridos y enums.
+// `?` en el Anexo = opcional → no se exige aquí.
+const ESQUEMA_EVENTOS = {
+  'session.open':  { requeridos: ['origen', 'es_rafaga'] },
+  'session.start': { requeridos: [] },
+  'piece.view':    { requeridos: ['piece_id', 'tipo', 'posicion'], enums: { tipo: ['persona', 'prompt'] } },
+  'action.*':      { requeridos: ['tipo'], enums: { tipo: ACCIONES_VALIDAS } },
+  'brake.shown':   { requeridos: ['motivo'], enums: { motivo: ['tope', 'tiempo', 'rafaga'] } },
+  'brake.result':  { requeridos: ['resultado'], enums: { resultado: ['acepto', 'continuo'] } },
+  'session.close': { requeridos: ['duracion_s', 'piezas_vistas', 'acciones'] },
+  'day.exhausted': { requeridos: [] },
+};
+
+const TIPOS_EVENTO = Object.keys(ESQUEMA_EVENTOS);
 
 const VERA_EVENTS_KEY = 'vera_events';
 
-function esTipoValido(tipo) {
-  if (TIPOS_EVENTO.includes(tipo)) return tipo !== 'action.*'; // el comodín no se emite literal
-  if (tipo.startsWith('action.')) {
-    return ACCIONES_VALIDAS.includes(tipo.slice('action.'.length));
+// 'action.reply' → clave de esquema 'action.*'; el resto, literal.
+function claveEsquema(tipo) {
+  if (tipo.startsWith('action.') && ACCIONES_VALIDAS.includes(tipo.slice('action.'.length))) {
+    return 'action.*';
   }
-  return false;
+  return tipo !== 'action.*' && ESQUEMA_EVENTOS[tipo] ? tipo : null;
 }
 
 function leerEventos() {
@@ -54,15 +45,37 @@ function leerEventos() {
 }
 
 function emitir(tipo, datos = {}) {
-  if (!esTipoValido(tipo)) {
+  const clave = claveEsquema(tipo);
+  if (!clave) {
     throw new Error(
       `[vera] Tipo de evento desconocido: "${tipo}". Válidos (Anexo B): ` +
-      TIPOS_EVENTO.join(', ') +
+      TIPOS_EVENTO.filter(t => t !== 'action.*').join(', ') +
       ` — action.* admite: ${ACCIONES_VALIDAS.map(a => 'action.' + a).join(', ')}`
     );
   }
   if (typeof datos !== 'object' || datos === null || Array.isArray(datos)) {
     throw new Error('[vera] `datos` debe ser un objeto plano.');
+  }
+
+  // action.*: datos.tipo se completa desde el sufijo; si viene, debe coincidir.
+  if (clave === 'action.*') {
+    const sufijo = tipo.slice('action.'.length);
+    if (datos.tipo === undefined) datos = { ...datos, tipo: sufijo };
+    else if (datos.tipo !== sufijo) {
+      throw new Error(`[vera] datos.tipo ("${datos.tipo}") no coincide con el sufijo del evento ("${sufijo}").`);
+    }
+  }
+
+  const esquema = ESQUEMA_EVENTOS[clave];
+  for (const campo of esquema.requeridos) {
+    if (datos[campo] === undefined) {
+      throw new Error(`[vera] ${tipo}: falta campo requerido "${campo}" (Anexo B).`);
+    }
+  }
+  for (const [campo, valores] of Object.entries(esquema.enums || {})) {
+    if (datos[campo] !== undefined && !valores.includes(datos[campo])) {
+      throw new Error(`[vera] ${tipo}: ${campo}="${datos[campo]}" inválido. Válidos: ${valores.join(' | ')}.`);
+    }
   }
 
   const ahora = new Date();
