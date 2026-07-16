@@ -95,6 +95,7 @@ function crearMaquina({ config, seed, emitir, almacen, ahora }) {
     extraUsado: false,
     enExtra: false,
     acciones: 0,         // acciones con intención COMPUTABLES de la sesión
+    porTipo: { reply: 0, prompt_answer: 0, save: 0, create: 0, gesture: 0 },
     piezasVistas: 0,
     aperturaTs: 0,
     sesionCorrida: false, // true si session.start ya se emitió (consume presupuesto)
@@ -139,7 +140,7 @@ function crearMaquina({ config, seed, emitir, almacen, ahora }) {
   // acción con intención computable → suma a M3 de la sesión
   function registrarAccion(tipo, datos, computa) {
     emitir(`action.${tipo}`, datos);
-    if (computa) s.acciones++;
+    if (computa) { s.acciones++; s.porTipo[tipo]++; }
     return computa;
   }
 
@@ -152,6 +153,7 @@ function crearMaquina({ config, seed, emitir, almacen, ahora }) {
     get extraUsado() { return s.extraUsado; },
     get enExtra() { return s.enExtra; },
     get acciones() { return s.acciones; },
+    get accionesPorTipo() { return { ...s.porTipo }; },
     get piezasVistas() { return s.piezasVistas; },
     get duracionS() { return Math.round((ahora() - s.aperturaTs) / 1000); },
     get sesionesHoy() { return leerDia().sesiones; },
@@ -326,7 +328,7 @@ if (typeof document !== 'undefined') {
 
     /* ── S3 · Contenido ── */
     function renderTope() {
-      $('#tope-count').textContent = `${maquina.posicion} de ${maquina.tope}`;
+      $('#tope-count').textContent = `${maquina.posicion} de ${maquina.tope} hoy`;
       const dots = $('#tope-dots');
       dots.innerHTML = '';
       for (let i = 1; i <= maquina.tope; i++) {
@@ -384,9 +386,9 @@ if (typeof document !== 'undefined') {
             </div>
             <p class="card-cuerpo">${esc(pz.texto)}</p>
             <div class="acciones">
-              <button class="accion" data-rol="gesto">${esc(SEED.gesto.simbolo)} ${esc(SEED.gesto.etiqueta)}</button>
-              <button class="accion" data-rol="abrir-resp">Responder</button>
+              <button class="accion primary" data-rol="abrir-resp">Responder</button>
               <button class="accion" data-rol="guardar">Guardar</button>
+              <button class="accion" data-rol="gesto">${esc(SEED.gesto.simbolo)} ${esc(SEED.gesto.etiqueta)}</button>
             </div>
             <div data-rol="zona-comp"></div>
           </article>`;
@@ -413,7 +415,7 @@ if (typeof document !== 'undefined') {
             <div class="prompt-tag">${esc(SEED.gesto.simbolo)} Prompt de VERA</div>
             <p class="card-cuerpo">${esc(pz.texto)}</p>
             <div class="acciones">
-              <button class="accion primary" data-rol="abrir-resp">Responder</button>
+              <button class="accion primary" data-rol="abrir-resp">Escribir</button>
             </div>
             <div data-rol="zona-comp"></div>
           </article>`;
@@ -436,12 +438,12 @@ if (typeof document !== 'undefined') {
       else renderPieza();
     });
 
-    /* ── S4 · Freno ── */
+    /* ── S4 · Freno (copy oficial del wireframe Fase 1) ── */
     function renderFreno() {
       $('#btn-vermas').hidden = maquina.extraUsado;
       $('#freno-sub').textContent = maquina.extraUsado
-        ? 'Lo de hoy en tu círculo ya está completo. Lo que sigue es tuyo.'
-        : 'Viste lo que tu círculo trajo hoy. Puedes cerrar aquí, o ver un poco más.';
+        ? 'Lo de hoy quedó completo. Volver mañana con la mente despejada vale más que seguir ahora.'
+        : `Viste las ${maquina.tope} de hoy. Volver mañana con la mente despejada vale más que seguir ahora.`;
       mostrarVista('freno');
     }
 
@@ -456,13 +458,20 @@ if (typeof document !== 'undefined') {
       }
     });
 
-    /* ── S5 · Cierre ── */
+    /* ── S5 · Cierre (copy oficial: síntesis de lo logrado, no invitación a volver) ── */
     function renderCierre() {
       const min = Math.max(1, Math.round(maquina.duracionS / 60));
-      $('#resumen').innerHTML = `
-        <div class="resumen-fila"><span class="ic">◈</span> ${maquina.piezasVistas} piezas de tu círculo</div>
-        <div class="resumen-fila"><span class="ic">✎</span> ${maquina.acciones} ${maquina.acciones === 1 ? 'acción' : 'acciones'} con intención</div>
-        <div class="resumen-fila"><span class="ic">◷</span> ~${min} min — y eso fue suficiente</div>`;
+      const t = maquina.accionesPorTipo;
+      const filas = [];
+      if (t.save) filas.push(['✦', `Guardaste ${t.save} idea${t.save === 1 ? '' : 's'} para ti`]);
+      if (t.reply) filas.push(['↩', `Respondiste a ${t.reply} persona${t.reply === 1 ? '' : 's'} real${t.reply === 1 ? '' : 'es'}`]);
+      if (t.prompt_answer) filas.push(['✎', `Escribiste ${t.prompt_answer} respuesta${t.prompt_answer === 1 ? '' : 's'} a prompts`]);
+      if (t.create) filas.push(['✎', `Creaste ${t.create} reflexión${t.create === 1 ? '' : 'es'} propia${t.create === 1 ? '' : 's'}`]);
+      if (t.gesture) filas.push([SEED.gesto.simbolo, `Agradeciste ${t.gesture} ${t.gesture === 1 ? 'vez' : 'veces'}`]);
+      if (!filas.length) filas.push(['◈', `Viste ${maquina.piezasVistas} piezas de tu círculo`]);
+      filas.push(['✓', `Sesión de ${min} minuto${min === 1 ? '' : 's'}, completa`]);
+      $('#resumen').innerHTML = filas.map(([ic, txt]) =>
+        `<div class="resumen-fila"><span class="ic">${ic}</span>${txt}</div>`).join('');
       mostrarVista('cierre');
     }
 
