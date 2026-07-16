@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080e0a">
+  <title>VERA — Interfaz de Calma</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <span class="vmark"><span>V</span><span>V</span></span>
+    </header>
+
+    <!-- S1 · Aterrizaje: pregunta del día + fichas (saltable) -->
+    <section class="vista" id="v-aterrizaje" hidden>
+      <div class="aterrizaje">
+        <p class="greet">Bienvenido de vuelta</p>
+        <h1 class="pregunta" id="pregunta"></h1>
+        <div class="fichas" id="fichas"></div>
+        <button class="saltar" id="saltar">o simplemente continúa →</button>
+      </div>
+    </section>
+
+    <!-- S2 · Tránsito de calma -->
+    <section class="vista" id="v-transito" hidden>
+      <div class="transito">
+        <div class="respira" aria-hidden="true"></div>
+        <p class="respira-txt">Tu círculo trajo algunas cosas. Respira, no hay apuro.</p>
+      </div>
+    </section>
+
+    <!-- S3 · Contenido con tope -->
+    <section class="vista" id="v-contenido" hidden>
+      <div class="contenido">
+        <div class="tope-bar">
+          <span class="tope-count" id="tope-count"></span>
+          <span class="tope-dots" id="tope-dots"></span>
+        </div>
+        <div id="pieza"></div>
+        <button class="btn-primario" id="btn-siguiente">Siguiente →</button>
+      </div>
+    </section>
+
+    <!-- S4 · Freno de mano: invita a cerrar, jamás bloquea -->
+    <section class="vista" id="v-freno" hidden>
+      <div class="freno">
+        <div class="freno-mark">✋</div>
+        <h2 class="freno-t">Eso era lo de hoy.</h2>
+        <p class="freno-s" id="freno-sub"></p>
+        <button class="btn-primario" id="btn-cerrar-calma">Cerrar con calma</button>
+        <button class="btn-fantasma" id="btn-vermas">Ver un poco más</button>
+      </div>
+    </section>
+
+    <!-- S5 · Cierre con propósito -->
+    <section class="vista" id="v-cierre" hidden>
+      <div class="cierre">
+        <h2 class="cierre-t">Cerraste con calma.</h2>
+        <div class="resumen" id="resumen"></div>
+        <p class="cierre-pie">Lo que viste hoy tiene fin. Eso es VERA.</p>
+      </div>
+    </section>
+
+    <!-- Ráfaga ansiosa: mensaje de calma, sin contenido, sin culpa -->
+    <section class="vista" id="v-rafaga" hidden>
+      <div class="freno">
+        <div class="freno-mark">◇</div>
+        <h2 class="freno-t">Volviste rápido, y está bien.</h2>
+        <p class="freno-s" id="rafaga-txt">Aquí no hay nada nuevo que se escape. Tu círculo sigue donde mismo. Date un momento.</p>
+        <button class="btn-primario" id="btn-rafaga-ok">Vuelvo más tarde</button>
+      </div>
+    </section>
+
+    <!-- Agotado: presupuesto del día completo + modo producir (nunca "no puedes") -->
+    <section class="vista" id="v-agotado" hidden>
+      <div class="freno">
+        <div class="freno-mark">✦</div>
+        <h2 class="freno-t">Tu día en VERA ya está completo.</h2>
+        <p class="freno-s">Viste lo que había que ver. Si algo te quedó dando vueltas, este es buen momento para escribirlo.</p>
+        <div id="agotado-comp" style="width:100%"></div>
+        <p class="freno-s">Mañana tu círculo trae cosas nuevas.</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="eventos.js"></script>
+  <script src="seed.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
